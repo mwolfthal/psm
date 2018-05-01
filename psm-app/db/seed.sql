@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS
   agreement_documents,
   audit_details,
   audit_records,
+  automatic_screenings,
   beneficial_owner,
   beneficial_owner_types,
   binary_contents,
@@ -25,6 +26,8 @@ DROP TABLE IF EXISTS
   external_profile_links,
   help_items,
   issuing_boards,
+  leie_automatic_screening_matches,
+  leie_automatic_screenings,
   license_statuses,
   license_types,
   licenses,
@@ -1476,4 +1479,44 @@ CREATE TABLE external_profile_links(
   profile_id BIGINT,
   system_id TEXT,
   external_profile_id TEXT
+);
+
+CREATE TABLE automatic_screenings(
+  automatic_screening_id BIGINT PRIMARY KEY,
+  enrollment_id BIGINT NOT NULL
+    REFERENCES enrollments(enrollment_id),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  result TEXT NOT NULL
+);
+
+CREATE TABLE leie_automatic_screenings(
+  automatic_screening_id BIGINT PRIMARY KEY
+    REFERENCES automatic_screenings(automatic_screening_id),
+  npi_search_term TEXT NOT NULL
+);
+
+CREATE TABLE leie_automatic_screening_matches(
+  leie_automatic_screening_match_id BIGINT PRIMARY KEY,
+  leie_automatic_screening_id BIGINT NOT NULL
+    REFERENCES leie_automatic_screenings(automatic_screening_id),
+  resource_url TEXT NOT NULL,
+  npi TEXT,
+  upin TEXT,
+  first_name TEXT,
+  middle_name TEXT,
+  last_name TEXT,
+  business_name TEXT,
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  zip_code TEXT,
+  born_at DATE,
+  excluded_at DATE,
+  exclusion_type TEXT,
+  general TEXT,
+  speciality TEXT,
+  reinstated_at DATE,
+  waived_at DATE,
+  waiver_state TEXT,
+  UNIQUE (leie_automatic_screening_id, resource_url)
 );
