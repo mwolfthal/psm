@@ -296,9 +296,13 @@ public class Exclusion extends Resource {
         if (date == null || date.isEmpty()) {
             return null;
         } else {
+            // The FHIR DateType month value is 0-indexed, but Java's
+            // LocalDate assumes it's 1-indexed and will throw an error
+            // for January (month 0) unless we standardize.
+            Integer javaMonth = date.getMonth() + 1;
             return LocalDate.of(
                     date.getYear(),
-                    date.getMonth(),
+                    javaMonth,
                     date.getDay()
             );
         }
