@@ -109,7 +109,7 @@ input,select,textarea{
 }
 .nav ul{
   float:left;
-  width:50%;
+  width:60%;
 }
 .nav ul li{
   display: inline;
@@ -138,7 +138,7 @@ input,select,textarea{
 }
 .mainNav .searchWidget{
   float:right;
-  width:49%;
+  width:39%;
 }
 .mainNav .searchWidget a{
   float:right;
@@ -4037,6 +4037,10 @@ input.text{
 }
 form .error{
   color: #d00;
+}
+
+.screeningsDateRange {
+  margin: 10px 0px;
 }
 
 /* END OF SERVICE ADMIN STYLES -------------------------------------------------- */
