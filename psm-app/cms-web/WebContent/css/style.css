@@ -4951,6 +4951,10 @@ select.stateSelect, select.stateSelectFor {
   width: 5%;
 }
 
+.providerTypesNum {
+  width:150px;
+}
+
 /* START OF ERROR MESSAGE ------------------------------------------------------- */
 #errorbar {
   background: #c00;
