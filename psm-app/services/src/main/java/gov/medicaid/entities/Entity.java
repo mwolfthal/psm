@@ -16,6 +16,7 @@
 
 package gov.medicaid.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -96,7 +97,7 @@ public abstract class Entity implements Serializable {
     @Column(name = "provider_sub_type")
     private String providerSubType;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "contact_id")
     private ContactInformation contactInformation;
 

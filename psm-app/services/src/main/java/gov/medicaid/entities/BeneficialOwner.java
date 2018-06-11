@@ -16,6 +16,7 @@
 
 package gov.medicaid.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -69,7 +70,7 @@ public abstract class BeneficialOwner implements Serializable {
     /**
      * Beneficial owner address.
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
 
@@ -94,7 +95,7 @@ public abstract class BeneficialOwner implements Serializable {
     /**
      * Other provider address.
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "oth_provider_address_id")
     private Address otherProviderAddress;
 

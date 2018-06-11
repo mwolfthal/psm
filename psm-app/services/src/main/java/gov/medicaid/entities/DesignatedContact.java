@@ -16,6 +16,7 @@
 
 package gov.medicaid.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -67,7 +68,7 @@ public class DesignatedContact implements Serializable {
     /**
      * The designated person.
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "person_id")
     private Person person;
 
