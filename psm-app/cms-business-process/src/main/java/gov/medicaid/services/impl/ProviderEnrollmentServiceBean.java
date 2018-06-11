@@ -70,6 +70,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityGraph;
+import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletResponse;
@@ -144,7 +145,9 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         Enrollment ticket = getTicketDetails(user, ticketId);
         if (ticket.getStatus().getDescription().equals(ViewStatics.DRAFT_STATUS)) {
             purge(ticket.getDetails());
-            getEm().remove(ticket);
+            EntityManager em = getEm();
+            em.remove(ticket);
+            em.detach(ticket);
         } else {
             throw new PortalServiceException("Cannot delete submitted tickets.");
         }
@@ -1583,7 +1586,6 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
             insertAddress(org.getReimbursementAddress());
             insertAddress(org.getTen99Address());
         }
-
         entity.setId(0);
         getEm().persist(entity);
     }
@@ -1600,7 +1602,6 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
             return;
         }
         insertAddress(contactInformation.getAddress());
-
         contactInformation.setId(0);
         getEm().persist(contactInformation);
     }
@@ -1614,7 +1615,6 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         if (address == null) {
             return;
         }
-
         address.setId(0);
         getEm().persist(address);
     }
@@ -1625,17 +1625,20 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
      * @param profile the profile to be deleted
      */
     private void purge(ProviderProfile profile) {
+        EntityManager em = getEm();
         List<ProviderService> services = profile.getServices();
         if (services != null) {
             for (ProviderService providerService : services) {
-                getEm().remove(providerService);
+                em.remove(providerService);
+                em.detach(providerService);
             }
         }
 
         List<PayToProvider> payTos = profile.getPayToProviders();
         if (payTos != null) {
             for (PayToProvider payTo : payTos) {
-                getEm().remove(payTo);
+                em.remove(payTo);
+                em.detach(payTo);
             }
         }
 
@@ -1644,25 +1647,26 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
             List<BeneficialOwner> owners = ownership.getBeneficialOwners();
             if (owners != null) {
                 for (BeneficialOwner owner : owners) {
-                    purgeAddress(owner.getAddress());
-                    purgeAddress(owner.getOtherProviderAddress());
-
-                    getEm().remove(owner);
+                    em.remove(owner);
+                    em.detach(owner);
                 }
             }
-
-            getEm().remove(ownership);
+            em.remove(ownership);
+            em.detach(ownership);
         }
 
         List<AcceptedAgreements> agreements = profile.getAgreements();
         if (agreements != null) {
             for (AcceptedAgreements acceptedAgreements : agreements) {
-                getEm().remove(acceptedAgreements);
+                em.remove(acceptedAgreements);
+                em.detach(acceptedAgreements);
             }
         }
 
-        if (profile.getStatement() != null) {
-            getEm().remove(profile.getStatement());
+        ProviderStatement providerStatement = profile.getStatement();
+        if (providerStatement != null) {
+            em.remove(providerStatement);
+            em.detach(providerStatement);
         }
 
         List<Affiliation> affiliations = profile.getAffiliations();
@@ -1671,15 +1675,16 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
                 if (affiliation.getTargetProfileId() == 0) {
                     purgeEntity(affiliation.getEntity());
                 }
-
-                getEm().remove(affiliation);
+                em.remove(affiliation);
+                em.detach(affiliation);
             }
         }
 
         List<License> certifications = profile.getCertifications();
         if (certifications != null) {
             for (License license : certifications) {
-                getEm().remove(license);
+                em.remove(license);
+                em.detach(license);
             }
         }
 
@@ -1687,7 +1692,8 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         if (attachments != null) {
             for (Document attachment : attachments) {
                 if (attachment.getContentId() != null) {
-                    getEm().remove(attachment);
+                    em.remove(attachment);
+                    em.detach(attachment);
                 }
             }
         }
@@ -1695,12 +1701,14 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         List<DesignatedContact> designatedContacts = profile.getDesignatedContacts();
         if (designatedContacts != null) {
             for (DesignatedContact designatedContact : designatedContacts) {
-                purgeEntity(designatedContact.getPerson());
-                getEm().remove(designatedContact);
+                em.remove(designatedContact);
+                em.detach(designatedContact);
             }
         }
         purgeEntity(profile.getEntity());
-        getEm().remove(profile);
+        em.remove(profile);
+        em.detach(profile);
+        profile.setId(0);
     }
 
     /**
@@ -1712,17 +1720,9 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         if (entity == null) {
             return;
         }
-
-        purgeContactInformation(entity.getContactInformation());
-
-        if (entity instanceof Organization) {
-            Organization org = (Organization) entity;
-            purgeAddress(org.getBillingAddress());
-            purgeAddress(org.getReimbursementAddress());
-            purgeAddress(org.getTen99Address());
-        }
-
-        getEm().remove(entity);
+        EntityManager em = getEm();
+        em.remove(entity);
+        em.detach(entity);
     }
 
     /**
@@ -1734,7 +1734,11 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         if (address == null) {
             return;
         }
-        getEm().remove(address);
+        EntityManager em = getEm();
+        if (em.contains(address)) {
+            em.remove(address);
+            em.detach(address);
+        }
     }
 
     /**
@@ -1748,8 +1752,9 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         if (contactInformation == null) {
             return;
         }
-        purgeAddress(contactInformation.getAddress());
-        getEm().remove(contactInformation);
+        EntityManager em = getEm();
+        em.remove(contactInformation);
+        em.detach(contactInformation);
     }
 
     /**
@@ -1775,19 +1780,30 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
      * @param profile the profile to be populated
      */
     private void fetchChildren(ProviderProfile profile) {
-        profile.setEntity(findEntityByProviderKey(profile.getProfileId(), profile.getTicketId()));
-        profile.setDesignatedContacts(findDesignatedContacts(profile.getProfileId(), profile.getTicketId()));
-        profile.setCertifications(findCertifications(profile.getProfileId(), profile.getTicketId()));
-        profile.setAttachments(findAttachments(profile.getProfileId(), profile.getTicketId()));
-        profile.setAffiliations(findAffiliations(profile.getProfileId(), profile.getTicketId()));
-        profile.setStatement(findStatementByProviderKey(profile.getProfileId(), profile.getTicketId()));
-
-        profile.setOwnershipInformation(findOwnershipInformation(profile.getProfileId(), profile.getTicketId()));
-        profile.setAgreements(findAgreements(profile.getProfileId(), profile.getTicketId()));
-        profile.setNotes(findNotes(profile.getProfileId(), profile.getTicketId()));
-        profile.setPayToProviders(findPayToProviders(profile.getProfileId(), profile.getTicketId()));
-        profile.setServices(findServices(profile.getProfileId(), profile.getTicketId()));
-        profile.setCategoriesOfServiceTypes(findCategoriesOfService(profile.getProfileId(), profile.getTicketId()));
+        profile.setEntity(findEntityByProviderKey(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setDesignatedContacts(findDesignatedContacts(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setCertifications(findCertifications(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setAttachments(findAttachments(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setAffiliations(findAffiliations(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setStatement(findStatementByProviderKey(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setOwnershipInformation(findOwnershipInformation(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setAgreements(findAgreements(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setNotes(findNotes(
+            profile.getProfileId(), profile.getTicketId()));
+        profile.setPayToProviders(
+            findPayToProviders(profile.getProfileId(), profile.getTicketId()));
+        profile.setServices(
+            findServices(profile.getProfileId(), profile.getTicketId()));
+        profile.setCategoriesOfServiceTypes(
+            findCategoriesOfService(profile.getProfileId(), profile.getTicketId()));
     }
 
     /**
@@ -2620,7 +2636,9 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         checkProfileEntitlement(user, profileId);
         ProviderCategoryOfService service = getEm().find(ProviderCategoryOfService.class, id);
         if (service != null) {
-            getEm().remove(service);
+            EntityManager em = getEm();
+            em.remove(service);
+            em.detach(service);
         }
     }
 
@@ -2688,7 +2706,9 @@ public class ProviderEnrollmentServiceBean extends BaseService implements Provid
         checkTicketEntitlement(user, ticketId);
         ProviderCategoryOfService service = getEm().find(ProviderCategoryOfService.class, id);
         if (service != null) {
-            getEm().remove(service);
+            EntityManager em = getEm();
+            em.remove(service);
+            em.detach(service);
         }
     }
 
