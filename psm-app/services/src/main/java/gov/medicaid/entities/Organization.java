@@ -16,6 +16,7 @@
 
 package gov.medicaid.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -63,21 +64,21 @@ public class Organization extends Entity {
     /**
      * Practice secondary address.
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "billing_address_id")
     private Address billingAddress;
 
     /**
      * Practice secondary address.
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "reimbursement_address_id")
     private Address reimbursementAddress;
 
     /**
      * Practice secondary address.
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "ten99_address_id")
     private Address ten99Address;
 
